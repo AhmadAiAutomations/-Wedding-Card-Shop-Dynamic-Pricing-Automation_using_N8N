@@ -1,0 +1,535 @@
+{
+  "name": "wedding final",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3rd-wedding-card-final",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "aea474a5-66fa-4ff8-90da-8bfa76649e8f",
+      "name": "Receive Card Order",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -528,
+        208
+      ],
+      "webhookId": "68fdf537-7b11-4383-8429-4ca295461505"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "card_code",
+              "value": "={{ $json.body.card_code }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "quantity",
+              "value": "={{ Number($json.body.quantity) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1efecd7b-2dd5-4822-9c29-1983bbaf8c5b",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1lYTZkCMAfsfu7t4wHY4fWV3HG-uRrFrgtgALDapvVAU",
+          "mode": "list",
+          "cachedResultName": "n8n wedding Db",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lYTZkCMAfsfu7t4wHY4fWV3HG-uRrFrgtgALDapvVAU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1875839546,
+          "mode": "list",
+          "cachedResultName": "cardscalcu",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lYTZkCMAfsfu7t4wHY4fWV3HG-uRrFrgtgALDapvVAU/edit#gid=1875839546"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "card_code",
+              "lookupValue": "={{ $json.card_code }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "18e0b81d-1c41-4c38-9850-5eb02672e552",
+      "name": "Lookup Card in Card_Prices",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -80,
+        208
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CtlSEJgyTQZQiA4e",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.card_code }}",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1aa36497-7a99-4fb3-b3bb-d9c1d6959425",
+      "name": "Check Card Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        144,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "error",
+              "value": "true",
+              "type": "boolean"
+            },
+            {
+              "id": "id-2",
+              "name": "message",
+              "value": "Invalid card code. Please check and try again.",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cb46bb55-946a-42c4-91e0-aadfcec75ddf",
+      "name": "Error - Invalid Card Code",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('Workflow Configuration').item.json.quantity }}",
+              "rightValue": "={{ $json.min_qty }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "84494578-2822-4e80-bd93-3ccc01a8e001",
+      "name": "Check Minimum Quantity",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        368,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "error",
+              "value": "true",
+              "type": "boolean"
+            },
+            {
+              "id": "id-2",
+              "name": "message",
+              "value": "={{ 'Minimum order quantity is ' + $json.min_qty + ' cards for this design.' }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "status",
+              "value": "error",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "min_qty",
+              "value": "={{ $json.min_qty }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "27afc1a5-1ccf-4e2f-b65f-80e5b48359cb",
+      "name": "Error - Below Minimum Quantity",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ==============================\n// MKML ADVANCED PRICE CALCULATION\n// Dynamic Discount: Qty + Base Price + Min Qty Based\n// ==============================\n\nconst data = $json;\n\n// ------------------------------\n// 0️⃣ DISCOUNT CONFIGURATION\n// ------------------------------\n\nconst DISCOUNT_CONFIG = {\n  premium: {\n    minPrice: 100,\n    ratePerTenPercent: 1.0,      // 1% discount per 10% qty increase\n    maxDiscountPercent: 20,      // max 20% off\n    minQtyMultiplier: 1.3,       // 30% above min_qty to start discount\n  },\n  standard: {\n    minPrice: 50,\n    ratePerTenPercent: 0.75,     // 0.75% per 10% increase\n    maxDiscountPercent: 15,\n    minQtyMultiplier: 1.5,\n  },\n  economy: {\n    minPrice: 30,\n    ratePerTenPercent: 0.5,      // 0.5% per 10% increase\n    maxDiscountPercent: 10,\n    minQtyMultiplier: 1.5,\n  },\n  budget: {\n    minPrice: 0,\n    fixedDiscountPerCard: 3,     // Fixed Rs 3 off (not percentage)\n    maxFixedDiscount: 5,         // Max Rs 5 off\n    minQtyMultiplier: 2.0,       // Need 2x min_qty\n  }\n};\n\n// BULK BONUS: Extra discount for very large orders\nconst BULK_BONUS_TIERS = [\n  { minQty: 1000, bonusPercent: 8 },\n  { minQty: 500,  bonusPercent: 6 },\n  { minQty: 200,  bonusPercent: 4 },\n  { minQty: 100,  bonusPercent: 2 },\n];\n\n// ------------------------------\n// 1️⃣ NORMALIZE INPUTS\n//    Quantity from Workflow Configuration (user form input)\n//    == {{ $('Workflow Configuration').item.json.quantity }}\n// ------------------------------\nconst wfConfig = $node[\"Workflow Configuration\"].json;\n\nconst quantity = parseInt(wfConfig.quantity, 10);  // user-entered quantity\nconst cardCode = data.card_code || null;\nconst basePrice = parseFloat(data.base_price ?? 0);\nconst minQty = parseInt(data.min_qty ?? 0, 10);\nconst discountRules = (data.discount_rules || '').toString().trim();\n\n// ------------------------------\n// 2️⃣ VALIDATION\n// ------------------------------\n\nif (!cardCode) {\n  return { error: true, message: 'card_code is missing' };\n}\n\nif (!Number.isFinite(quantity) || quantity <= 0) {\n  return {\n    card_code: cardCode,\n    quantity,\n    price_per_card: basePrice,\n    total_price: 0,\n    message: 'Quantity is zero or missing',\n  };\n}\n\nif (Number.isFinite(minQty) && minQty > 0 && quantity < minQty) {\n  return {\n    card_code: cardCode,\n    quantity,\n    base_price: basePrice,\n    min_qty: minQty,\n    price_per_card: basePrice,\n    total_price: quantity * basePrice,\n    warning: `Minimum quantity is ${minQty}`,\n  };\n}\n\n// ------------------------------\n// 3️⃣ DETERMINE PRICE TIER\n// ------------------------------\n\nfunction getPriceTier(price) {\n  if (price >= DISCOUNT_CONFIG.premium.minPrice) return 'premium';\n  if (price >= DISCOUNT_CONFIG.standard.minPrice) return 'standard';\n  if (price >= DISCOUNT_CONFIG.economy.minPrice) return 'economy';\n  return 'budget';\n}\n\nconst priceTier = getPriceTier(basePrice);\nconst tierConfig = DISCOUNT_CONFIG[priceTier];\n\n// ------------------------------\n// 4️⃣ CALCULATE QTY INCREASE PERCENTAGE\n// ------------------------------\n\nconst qtyIncreasePercent = minQty > 0 \n  ? ((quantity - minQty) / minQty) * 100 \n  : 0;\n\nconst qtyMultiplier = minQty > 0 \n  ? quantity / minQty \n  : 1;\n\n// ------------------------------\n// 5️⃣ CALCULATE DISCOUNT\n// ------------------------------\n\nlet discountPercent = 0;\nlet fixedDiscountPerCard = 0;\nlet appliedQuantityDiscount = false;\nlet discountType = 'none';\n\n// Check if quantity qualifies for discount\nconst qualifiesForDiscount = qtyMultiplier >= tierConfig.minQtyMultiplier;\n\nif (qualifiesForDiscount) {\n  \n  if (priceTier === 'budget') {\n    // BUDGET TIER: Fixed amount discount (not percentage)\n    // Large qty = slightly more fixed discount, but max Rs 5\n    const qtyFactor = Math.min(qtyMultiplier / 2, 1.67); // cap at ~1.67\n    fixedDiscountPerCard = Math.min(\n      tierConfig.fixedDiscountPerCard * qtyFactor,\n      tierConfig.maxFixedDiscount\n    );\n    fixedDiscountPerCard = Math.round(fixedDiscountPerCard * 100) / 100;\n    appliedQuantityDiscount = true;\n    discountType = 'fixed';\n    \n  } else {\n    // PREMIUM/STANDARD/ECONOMY: Percentage-based discount\n    // For every 10% qty increase above min_qty, apply rate\n    const tenPercentIncrements = qtyIncreasePercent / 10;\n    discountPercent = tenPercentIncrements * tierConfig.ratePerTenPercent;\n    \n    // Cap at max discount\n    discountPercent = Math.min(discountPercent, tierConfig.maxDiscountPercent);\n    appliedQuantityDiscount = true;\n    discountType = 'percentage';\n  }\n}\n\n// ------------------------------\n// 6️⃣ BULK BONUS (only for non-budget tiers)\n// ------------------------------\n\nlet bulkBonusPercent = 0;\nlet appliedBulkBonus = false;\n\nif (priceTier !== 'budget') {\n  for (const tier of BULK_BONUS_TIERS) {\n    if (quantity >= tier.minQty) {\n      bulkBonusPercent = tier.bonusPercent;\n      appliedBulkBonus = true;\n      break;\n    }\n  }\n}\n\n// ------------------------------\n// 7️⃣ HIGH VALUE ORDER BONUS\n// ------------------------------\n\n// Extra bonus for high-value orders (qty × basePrice > threshold)\nlet highValueBonus = 0;\nlet appliedHighValueBonus = false;\nconst orderValue = quantity * basePrice;\n\nif (orderValue >= 50000 && priceTier !== 'budget') {\n  highValueBonus = 3;  // Extra 3% for orders worth Rs 50,000+\n  appliedHighValueBonus = true;\n} else if (orderValue >= 25000 && priceTier !== 'budget') {\n  highValueBonus = 1.5;  // Extra 1.5% for orders worth Rs 25,000+\n  appliedHighValueBonus = true;\n}\n\n// ------------------------------\n// 8️⃣ CALCULATE FINAL DISCOUNT & PRICE\n// ------------------------------\n\nlet totalDiscountPercent = discountPercent + bulkBonusPercent + highValueBonus;\nlet pricePerCard = basePrice;\nlet discountPerCard = 0;\n\nif (discountType === 'percentage') {\n  // Apply percentage discount\n  totalDiscountPercent = Math.min(totalDiscountPercent, 30); // Hard cap 30%\n  discountPerCard = basePrice * (totalDiscountPercent / 100);\n  pricePerCard = basePrice - discountPerCard;\n  \n} else if (discountType === 'fixed') {\n  // Apply fixed discount (budget tier)\n  discountPerCard = fixedDiscountPerCard;\n  pricePerCard = basePrice - fixedDiscountPerCard;\n  totalDiscountPercent = (fixedDiscountPerCard / basePrice) * 100;\n}\n\n// Ensure price doesn't go below minimum (10% of base price)\nconst minAllowedPrice = basePrice * 0.1;\npricePerCard = Math.max(pricePerCard, minAllowedPrice);\n\n// Round to 2 decimal places\npricePerCard = Math.round(pricePerCard * 100) / 100;\ndiscountPerCard = Math.round((basePrice - pricePerCard) * 100) / 100;\n\n// ------------------------------\n// 9️⃣ FINAL CALCULATIONS\n// ------------------------------\n\nconst totalPrice = Math.round(quantity * pricePerCard * 100) / 100;\nconst totalSavings = Math.round((basePrice * quantity - totalPrice) * 100) / 100;\nconst effectiveDiscountPercent = Math.round((discountPerCard / basePrice) * 100 * 100) / 100;\n\n// ------------------------------\n// 🔟 RETURN OUTPUT\n// ------------------------------\n\nreturn {\n  // Basic Info\n  card_code: cardCode,\n  quantity: quantity,\n  base_price: basePrice,\n  min_qty: minQty,\n  \n  // Tier Info\n  price_tier: priceTier,\n  qty_multiplier: Math.round(qtyMultiplier * 100) / 100,\n  qty_increase_percent: Math.round(qtyIncreasePercent * 100) / 100,\n  \n  // Discount Breakdown\n  discount_type: discountType,\n  quantity_discount_percent: Math.round(discountPercent * 100) / 100,\n  bulk_bonus_percent: bulkBonusPercent,\n  high_value_bonus_percent: highValueBonus,\n  total_discount_percent: Math.round(effectiveDiscountPercent * 100) / 100,\n  discount_per_card: discountPerCard,\n  \n  // Final Prices\n  price_per_card: pricePerCard,\n  total_price: totalPrice,\n  total_savings: totalSavings,\n  \n  // Order Value\n  original_order_value: Math.round(basePrice * quantity * 100) / 100,\n  \n  // Flags\n  applied_discount: appliedQuantityDiscount || appliedBulkBonus || appliedHighValueBonus,\n  applied_quantity_discount: appliedQuantityDiscount,\n  applied_bulk_bonus: appliedBulkBonus,\n  applied_high_value_bonus: appliedHighValueBonus,\n};"
+      },
+      "id": "5d7554b3-d203-46b6-a70b-db9aa3410913",
+      "name": "Calculate Price with Discounts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ==============================\n// DYNAMIC MARKETING MESSAGE GENERATOR\n// ==============================\n\nconst calcData = $json;\n\n// Get all values from calculation\nconst cardCode = calcData.card_code || 'N/A';\nconst quantity = calcData.quantity || 0;\nconst basePrice = calcData.base_price || 0;\nconst minQty = calcData.min_qty || 10;\nconst pricePerCard = calcData.price_per_card || basePrice;\nconst totalPrice = calcData.total_price || 0;\nconst priceTier = calcData.price_tier || 'standard';\nconst discountPerCard = calcData.discount_per_card || 0;\nconst totalDiscountPercent = calcData.total_discount_percent || 0;\nconst totalSavings = calcData.total_savings || 0;\nconst qtyMultiplier = calcData.qty_multiplier || 1;\nconst appliedDiscount = calcData.applied_discount || false;\n\n// Tier configurations for messages\nconst DISCOUNT_TIERS = {\n  premium: {\n    tiers: [\n      { minMultiplier: 10, label: 'Elite VIP', discountPercent: 20 },\n      { minMultiplier: 5, label: 'Platinum', discountPercent: 15 },\n      { minMultiplier: 3, label: 'Gold', discountPercent: 10 },\n      { minMultiplier: 2, label: 'Silver', discountPercent: 6 },\n      { minMultiplier: 1.3, label: 'Bronze', discountPercent: 3 },\n      { minMultiplier: 1, label: 'Standard', discountPercent: 0 },\n    ]\n  },\n  standard: {\n    tiers: [\n      { minMultiplier: 8, label: 'VIP Gold', discountPercent: 15 },\n      { minMultiplier: 4, label: 'Silver Plus', discountPercent: 10 },\n      { minMultiplier: 2.5, label: 'Silver', discountPercent: 6 },\n      { minMultiplier: 1.5, label: 'Bronze', discountPercent: 3 },\n      { minMultiplier: 1, label: 'Standard', discountPercent: 0 },\n    ]\n  },\n  economy: {\n    tiers: [\n      { minMultiplier: 6, label: 'Best Value', discountPercent: 10 },\n      { minMultiplier: 3, label: 'Great Deal', discountPercent: 6 },\n      { minMultiplier: 1.5, label: 'Saver', discountPercent: 3 },\n      { minMultiplier: 1, label: 'Standard', discountPercent: 0 },\n    ]\n  },\n  budget: {\n    tiers: [\n      { minMultiplier: 4, label: 'Max Saver', fixedDiscount: 5 },\n      { minMultiplier: 2, label: 'Value Pack', fixedDiscount: 3 },\n      { minMultiplier: 1, label: 'Standard', fixedDiscount: 0 },\n    ]\n  }\n};\n\n// Helper functions\nfunction formatCurrency(amount) {\n  return `Rs ${Math.round(amount).toLocaleString('en-PK')}`;\n}\n\nfunction getCurrentTier(tierConfig, multiplier) {\n  for (const tier of tierConfig) {\n    if (multiplier >= tier.minMultiplier) return tier;\n  }\n  return tierConfig[tierConfig.length - 1];\n}\n\nfunction getNextTier(tierConfig, multiplier) {\n  const reversed = [...tierConfig].reverse();\n  for (const tier of reversed) {\n    if (multiplier < tier.minMultiplier) return tier;\n  }\n  return null;\n}\n\nfunction getTierIcon(label) {\n  const icons = {\n    'Elite VIP': '👑', 'Platinum': '💎', 'VIP Gold': '🏆',\n    'Gold': '🥇', 'Silver Plus': '🥈', 'Silver': '🥈',\n    'Bronze': '🥉', 'Best Value': '⭐', 'Great Deal': '✨',\n    'Max Saver': '💰', 'Value Pack': '📦', 'Saver': '💵', 'Standard': '📋'\n  };\n  return icons[label] || '📋';\n}\n\nfunction getTierColor(label) {\n  const colors = {\n    'Elite VIP': '#FFD700', 'Platinum': '#E5E4E2', 'VIP Gold': '#FFD700',\n    'Gold': '#FFD700', 'Silver Plus': '#C0C0C0', 'Silver': '#C0C0C0',\n    'Bronze': '#CD7F32', 'Best Value': '#4CAF50', 'Great Deal': '#8BC34A',\n    'Max Saver': '#FF9800', 'Value Pack': '#2196F3', 'Saver': '#03A9F4', 'Standard': '#9E9E9E'\n  };\n  return colors[label] || '#9E9E9E';\n}\n\n// Calculate tier info\nconst tierConfig = DISCOUNT_TIERS[priceTier]?.tiers || DISCOUNT_TIERS.standard.tiers;\nconst currentTier = getCurrentTier(tierConfig, qtyMultiplier);\nconst nextTier = getNextTier(tierConfig, qtyMultiplier);\n\nlet qtyForNextTier = null;\nlet additionalQtyNeeded = null;\nlet nextTierSavings = null;\nlet nextTierPrice = null;\n\nif (nextTier && minQty > 0) {\n  qtyForNextTier = Math.ceil(minQty * nextTier.minMultiplier);\n  additionalQtyNeeded = qtyForNextTier - quantity;\n  \n  if (nextTier.discountPercent) {\n    nextTierPrice = basePrice * (1 - nextTier.discountPercent / 100);\n    nextTierSavings = qtyForNextTier * basePrice * (nextTier.discountPercent / 100);\n  } else if (nextTier.fixedDiscount) {\n    nextTierPrice = basePrice - nextTier.fixedDiscount;\n    nextTierSavings = qtyForNextTier * nextTier.fixedDiscount;\n  }\n}\n\n// Generate messages\nlet primaryMessage = '';\nlet secondaryMessage = '';\nlet messageType = 'info';\n\nif (appliedDiscount && totalSavings > 0) {\n  primaryMessage = `🎉 Congratulations! You're saving ${formatCurrency(totalSavings)} (${totalDiscountPercent.toFixed(1)}% OFF) on this order!`;\n  messageType = 'success';\n} else {\n  primaryMessage = `📦 You're ordering at standard price.`;\n  messageType = 'info';\n}\n\nif (nextTier && additionalQtyNeeded > 0 && additionalQtyNeeded <= 200) {\n  const nextDiscount = nextTier.discountPercent || nextTier.fixedDiscount;\n  const discountLabel = nextTier.discountPercent ? `${nextDiscount}% OFF` : `Rs ${nextDiscount} off/card`;\n  secondaryMessage = `💡 Insider Tip: Add just ${additionalQtyNeeded} more cards (${qtyForNextTier} total) to unlock ${nextTier.label} tier with ${discountLabel}!`;\n}\n\n// Build marketing object\nconst marketing = {\n  displayMessage: {\n    primary: primaryMessage,\n    secondary: secondaryMessage,\n    type: messageType\n  },\n  currentTierLabel: currentTier.label,\n  currentTierIcon: getTierIcon(currentTier.label),\n  currentTierColor: getTierColor(currentTier.label),\n  hasNextTier: nextTier !== null,\n  nextTierLabel: nextTier?.label || null,\n  nextTierQty: qtyForNextTier,\n  additionalQtyForNextTier: additionalQtyNeeded,\n  quickStats: {\n    youSave: totalSavings,\n    discountPercent: totalDiscountPercent,\n    pricePerCard: pricePerCard,\n    originalPricePerCard: basePrice\n  }\n};\n\n// Return merged data\nreturn {\n  ...calcData,\n  marketing: marketing\n};"
+      },
+      "id": "5663cc7a-d9f9-4a9b-90e5-9751eb7843b6",
+      "name": "Marketing Message Generator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "card_code",
+              "value": "={{ $json.card_code }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "quantity",
+              "value": "={{ $json.quantity }}",
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "base_price",
+              "value": "={{ $json.base_price }}",
+              "type": "number"
+            },
+            {
+              "id": "id-5",
+              "name": "price_per_card",
+              "value": "={{ $json.price_per_card }}",
+              "type": "number"
+            },
+            {
+              "id": "id-6",
+              "name": "total_price",
+              "value": "={{ $json.total_price }}",
+              "type": "number"
+            },
+            {
+              "id": "id-7",
+              "name": "total_savings",
+              "value": "={{ $json.total_savings }}",
+              "type": "number"
+            },
+            {
+              "id": "id-8",
+              "name": "total_discount_percent",
+              "value": "={{ $json.total_discount_percent }}",
+              "type": "number"
+            },
+            {
+              "id": "id-9",
+              "name": "applied_discount",
+              "value": "={{ $json.applied_discount }}",
+              "type": "boolean"
+            },
+            {
+              "id": "id-10",
+              "name": "marketing",
+              "value": "={{ $json.marketing }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d11e1abe-0c49-4195-8014-735dff05e1b8",
+      "name": "Format Success Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "0a1b5b1d-12bc-4a8f-a47c-8a1b80a27936",
+      "name": "Return Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1264,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e900fbc3-316a-4a09-9c62-46564f0576df",
+      "name": "Return Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        816,
+        304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive Card Order": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Lookup Card in Card_Prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Card in Card_Prices": {
+      "main": [
+        [
+          {
+            "node": "Check Card Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Card Exists": {
+      "main": [
+        [
+          {
+            "node": "Check Minimum Quantity",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - Invalid Card Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error - Invalid Card Code": {
+      "main": [
+        [
+          {
+            "node": "Return Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Minimum Quantity": {
+      "main": [
+        [
+          {
+            "node": "Calculate Price with Discounts",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - Below Minimum Quantity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error - Below Minimum Quantity": {
+      "main": [
+        [
+          {
+            "node": "Return Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Price with Discounts": {
+      "main": [
+        [
+          {
+            "node": "Marketing Message Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marketing Message Generator": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Success Response": {
+      "main": [
+        [
+          {
+            "node": "Return Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "ae929788-c1d6-4682-95e9-4ddbe28d61e1",
+  "meta": {
+    "instanceId": "c85a02c1d5b1694267b448982153b550176d52f038bb1695889923916b1b4a54"
+  },
+  "id": "KOxN6OJtxn4pfhab8XblB",
+  "tags": []
+}
